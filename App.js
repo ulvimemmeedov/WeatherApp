@@ -1,6 +1,8 @@
-import React,{useEffect,useState} from 'react';
+import React,{useState} from 'react';
 import { Image, StyleSheet, Text, View} from 'react-native';
 import { Appearance } from 'react-native';
+import * as Location from 'expo-location';
+
 export default function App() {
   const [CityName,SetCityName] = useState('');
   const [Country,SetCountry] = useState('');
@@ -8,12 +10,23 @@ export default function App() {
   const [Temp,SetTemp] = useState('');
   const [Textcon,SetTextcon] = useState('');
   const [Cloud,SetCloud] = useState('');
+  const [En,SetEn] = useState('');
+  const [Uzun,SetUzun] = useState('');
   const key = "44219db8c6ef46639fc133442211406";
-  const city = "Baku";
-  const url = `https://api.weatherapi.com/v1/current.json?key=${key}&q=${city}&aqi=no`;
+  const getloc = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      setErrorMsg('Permission to access location was denied');
+      return;
+    }
 
-  useEffect(() => {
-   fetch(url)
+    let location = await Location.getCurrentPositionAsync({});  
+    SetEn(location.coords.latitude.toString());
+    SetUzun(location.coords.longitude.toString());
+  }
+  getloc()
+  const url = `https://api.weatherapi.com/v1/current.json?key=${key}&q=${En},${Uzun}&aqi=no`;
+  fetch(url)
       .then(res => res.json())
       .then(res => {
         SetTemp(res.current.temp_c);
@@ -24,7 +37,6 @@ export default function App() {
         SetCloud(res.current.cloud)
       })
       .catch(error => console.log(error));
-    }, []);
   return (
     <View style={styles.weatherContainer}>
     <View style={styles.headerContainer}>
